@@ -8,7 +8,6 @@ import 'package:todo_getx/views/login_view.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await StorageService().init();
   runApp(const MyApp());
 }
 
