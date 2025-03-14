@@ -1,20 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:todo_getx/controllers/todo_controller.dart';
+import 'package:todo_getx/models/todo_model.dart';
 
-class AddTodoView extends StatelessWidget {
-  AddTodoView({super.key});
+class AddTodoView extends StatefulWidget {
+  AddTodoView({super.key, this.todo});
 
+  TodoModel? todo;
+
+  @override
+  _AddTodoViewState createState() => _AddTodoViewState();
+}
+
+class _AddTodoViewState extends State<AddTodoView> {
   final TodoController todoController = Get.put(TodoController());
   final TextEditingController titleController = TextEditingController();
   final TextEditingController subtitleController = TextEditingController();
+  bool isLoading = false; // ตัวแปรป้องกันการกดซ้ำ
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.todo != null) {
+      titleController.text = widget.todo!.title;
+      subtitleController.text = widget.todo!.subtitle;
+    }
+  }
+
+  void _saveTodo() async {
+    if (isLoading) return; // ป้องกันการกดซ้ำ
+
+    if (titleController.text.isEmpty) {
+      Get.snackbar(
+        'ข้อมูลไม่ครบ',
+        'กรุณากรอกข้อมูลให้ครบถ้วน',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.3),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    if (widget.todo != null) {
+      widget.todo!.title = titleController.text;
+      widget.todo!.subtitle = subtitleController.text;
+      await todoController.updateTodo(widget.todo!);
+    } else {
+      await todoController.addTodo(
+        titleController.text,
+        subtitleController.text,
+      );
+    }
+
+    Get.back();
+    Get.snackbar(
+      'แจ้งเตือน',
+      'บันทึกข้อมูลเรียบร้อยแล้ว',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.3),
+      colorText: Colors.white,
+    );
+
+    await Future.delayed(const Duration(seconds: 1)); // หน่วงเวลา
+    setState(() {
+      isLoading = false; // เปิดให้กดได้อีกครั้ง
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'เพิ่มรายการใหม่',
+        title: Text(
+          widget.todo != null ? 'แก้ไขรายการ Todo' : 'เพิ่มรายการ Todo',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.lightGreen[900],
@@ -67,30 +129,10 @@ class AddTodoView extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (titleController.text.isEmpty) {
-                        Get.snackbar(
-                          'ข้อมูลไม่ครบ',
-                          'กรุณากรอกข้อมูลให้ครบถ้วน',
-                          snackPosition: SnackPosition.TOP,
-                          backgroundColor: Colors.red.withOpacity(0.3),
-                          colorText: Colors.white,
-                        );
-                        return;
-                      }
-                      todoController.addTodo(
-                        titleController.text,
-                        subtitleController.text,
-                      );
-                      Get.back();
-                      Get.snackbar(
-                        'แจ้งเตือน',
-                        'บันทึกข้อมูลเรียบร้อยแล้ว',
-                        snackPosition: SnackPosition.TOP,
-                        backgroundColor: Colors.green.withOpacity(0.3),
-                        colorText: Colors.white,
-                      );
-                    },
+                    onPressed:
+                        isLoading
+                            ? null
+                            : _saveTodo, // ปิดปุ่มถ้า isLoading = true
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightGreen[900],
                       shape: RoundedRectangleBorder(
@@ -98,14 +140,19 @@ class AddTodoView extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: const Text(
-                      'บันทึก',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child:
+                        isLoading
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text(
+                              'บันทึก',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                   ),
                 ),
               ],

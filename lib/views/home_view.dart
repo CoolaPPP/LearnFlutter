@@ -95,10 +95,13 @@ class _HomeViewState extends State<HomeView> {
                       ),
                       trailing: IconButton(
                         onPressed: () {
-                          todoController.deleteTodo(index);
+                          todoController.deleteTodo(todo.docId ?? '');
                         },
                         icon: const Icon(Icons.delete, color: Colors.redAccent),
                       ),
+                      onTap: () {
+                        Get.to(AddTodoView(todo: todo));
+                      },
                     ),
                   );
                 },
