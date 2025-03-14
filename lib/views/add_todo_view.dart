@@ -16,7 +16,7 @@ class _AddTodoViewState extends State<AddTodoView> {
   final TodoController todoController = Get.put(TodoController());
   final TextEditingController titleController = TextEditingController();
   final TextEditingController subtitleController = TextEditingController();
-  bool isLoading = false; // ตัวแปรป้องกันการกดซ้ำ
+  bool isLoading = false; 
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _AddTodoViewState extends State<AddTodoView> {
   }
 
   void _saveTodo() async {
-    if (isLoading) return; // ป้องกันการกดซ้ำ
+    if (isLoading) return; 
 
     if (titleController.text.isEmpty) {
       Get.snackbar(
